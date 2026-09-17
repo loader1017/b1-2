@@ -1,4 +1,3 @@
-### 📝 다듬어진 다큐멘트 최종안 예시
 
 ```markdown
 # [Bug] OOM - 메모리 누수로 인한 MemoryGuard 보호 정책 강제 종료
@@ -11,10 +10,10 @@
 
 ## 2. Evidence & Logs (증거 자료)
 ```bash
-2026-05-14 03:16:03,405 [INFO] [MemoryWorker] Current Heap: 250MB
-2026-05-14 03:16:06,424 [INFO] [MemoryWorker] Current Heap: 275MB
-2026-05-14 03:16:06,424 [CRITICAL] [MemoryGuard] Memory limit exceeded (275MB >= 256MB) / (Recommend Over 256MB)
-2026-05-14 03:16:06,425 [CRITICAL] [MemoryGuard] Self-terminating process 69 to prevent system instability.
+2026-09-17 03:16:03,405 [INFO] [MemoryWorker] Current Heap: 250MB
+2026-09-17 03:16:06,424 [INFO] [MemoryWorker] Current Heap: 275MB
+2026-09-17 03:16:06,424 [CRITICAL] [MemoryGuard] Memory limit exceeded (275MB >= 256MB) / (Recommend Over 256MB)
+2026-09-17 03:16:06,425 [CRITICAL] [MemoryGuard] Self-terminating process 69 to prevent system instability.
 
 >>> [SYSTEM] SELF-TERMINATED (Memory Limit Exceeded) <<<
 Killed
@@ -32,8 +31,6 @@ Killed
 * **Before & After 검증:**
 * **Before:** 256MB 제한 시 약 32초 후 OOM 발생 및 프로세스 종료
 * **After:** 512MB 상향 후 즉각적인 OOM 강제 종료를 회피하고 다음 단계를 수행할 수 있음을 확인했습니다.
-
-
 * **추가 제안:** 임시 조치로 생존 시간을 늘렸으나, 근본적인 해결을 위해서는 소스 코드 내부의 불필요한 데이터를 주기적으로 삭제(Garbage Collection 유도 등)하는 리팩토링이 필수적입니다.
 
 ---
@@ -50,9 +47,9 @@ Killed
 ## 2. Evidence & Logs (증거 자료)
 
 ```bash
-2026-05-14 03:23:33,745 [INFO] [CpuWorker] Current Load: 49.06%
-2026-05-14 03:23:36,854 [INFO] [CpuWorker] Current Load: 50.60%
-2026-05-14 03:23:36,961 [CRITICAL] [CpuWorker] CPU Threshold Violated! (50.6%).
+2026-09-17 03:23:33,745 [INFO] [CpuWorker] Current Load: 49.06%
+2026-09-17 03:23:36,854 [INFO] [CpuWorker] Current Load: 50.60%
+2026-09-17 03:23:36,961 [CRITICAL] [CpuWorker] CPU Threshold Violated! (50.6%).
 
 >>> [SYSTEM] WATCHDOG: INITIATING EMERGENCY ABORT (SIGTERM) <<<
 Terminated
@@ -70,8 +67,6 @@ Terminated
 * **Before & After 비교 결과:**
 * **Before:** `CPU_MAX_OCCUPY=80` 또는 `100` 설정 시, CPU Load가 50%를 넘으며 Watchdog에 의해 강제 종료됨.
 * **After:** `CPU_MAX_OCCUPY=10` 설정 시, CPU Load가 10% 도달할 때 자발적으로 Cooldown(휴식)을 수행하며 프로세스가 종료되지 않고 안정적으로 유지됨을 확인했습니다.
-
-
 * **추가 제안:** CPU 한도를 낮추는 것은 임시 조치이며, 근본적인 해결을 위해 연산 사이에 `time.sleep()`을 주어 자원을 양보(Yield)하거나 분산 처리 아키텍처를 도입해야 합니다.
 
 ---
@@ -88,12 +83,12 @@ CPU 한도를 조정하여 프로세스 생존을 보장한 이후, 프로세스
 ## 2. Evidence & Logs (증거 자료)
 
 ```bash
-2026-05-14 03:52:15,657 [INFO] [AgentWorker][Worker-Thread-1] LOCK ACQUIRED: [Shared_Memory_A]. (Holding...)
-2026-05-14 03:52:15,658 [INFO] [AgentWorker][Worker-Thread-2] LOCK ACQUIRED: [Socket_Pool_B]. (Holding...)
-2026-05-14 03:52:17,664 [INFO] [AgentWorker][Worker-Thread-2] Need resource [Shared_Memory_A] to write logs.
-2026-05-14 03:52:17,664 [INFO] [AgentWorker][Worker-Thread-1] Need resource [Socket_Pool_B] to finish job.
-2026-05-14 03:52:17,665 [INFO] [AgentWorker][Worker-Thread-2] WAITING for [Shared_Memory_A]... (Status: BLOCKED)
-2026-05-14 03:52:17,666 [INFO] [AgentWorker][Worker-Thread-1] WAITING for [Socket_Pool_B]... (Status: BLOCKED)
+2026-09-17 03:52:15,657 [INFO] [AgentWorker][Worker-Thread-1] LOCK ACQUIRED: [Shared_Memory_A]. (Holding...)
+2026-09-17 03:52:15,658 [INFO] [AgentWorker][Worker-Thread-2] LOCK ACQUIRED: [Socket_Pool_B]. (Holding...)
+2026-09-17 03:52:17,664 [INFO] [AgentWorker][Worker-Thread-2] Need resource [Shared_Memory_A] to write logs.
+2026-09-17 03:52:17,664 [INFO] [AgentWorker][Worker-Thread-1] Need resource [Socket_Pool_B] to finish job.
+2026-09-17 03:52:17,665 [INFO] [AgentWorker][Worker-Thread-2] WAITING for [Shared_Memory_A]... (Status: BLOCKED)
+2026-09-17 03:52:17,666 [INFO] [AgentWorker][Worker-Thread-1] WAITING for [Socket_Pool_B]... (Status: BLOCKED)
 
 ```
 
@@ -108,8 +103,6 @@ CPU 한도를 조정하여 프로세스 생존을 보장한 이후, 프로세스
 * **Before & After 비교 결과:**
 * **Before (true):** 동시 자원 점유 요청 과정에서 데드락 발생 및 무응답
 * **After (false):** Task Scheduler에 의해 작업 스레드가 순차 실행되어 교착상태 없이 모든 작업이 정상 완료(`All tasks completed.`)됨을 확인했습니다.
-
-
 * **추가 제안:** 멀티스레딩 환경을 유지하려면 모든 스레드가 동일한 순서로 Lock을 획득하도록 코드 수정이 필요합니다.
 
 ---
@@ -119,6 +112,7 @@ CPU 한도를 조정하여 프로세스 생존을 보장한 이후, 프로세스
 모든 환경변수 최적화 조치를 적용한 결과, 애플리케이션이 강제 종료나 데드락 없이 안정적으로 작동함을 최종 확인하였습니다.
 
 * **최종 적용 환경변수:**
+
 ```bash
 export MEMORY_LIMIT=512
 export CPU_MAX_OCCUPY=10
@@ -126,15 +120,15 @@ export MULTI_THREAD_ENABLE=false
 
 ```
 
-
 * **최종 검증 로그:**
+
 ```bash
 >>> [SYSTEM] ALL CONFIGURATIONS OPTIMAL. RUNNING STABILITY TEST... <<<
 
-2026-05-14 03:54:42,751 [INFO] [Scheduler] All tasks completed.
-2026-05-14 03:54:44,886 [INFO] [CpuWorker] Peak reached (10.00%). Starting cooldown...
-2026-05-14 03:55:43,181 [WARNING] [MemoryWorker] Memory Usage Reached Limit (525MB). Starting cleanup...
-2026-05-14 03:55:43,203 [INFO] [System] Memory Cache Flushed. Process Stabilized.
+2026-09-17 03:54:42,751 [INFO] [Scheduler] All tasks completed.
+2026-09-17 03:54:44,886 [INFO] [CpuWorker] Peak reached (10.00%). Starting cooldown...
+2026-09-17 03:55:43,181 [WARNING] [MemoryWorker] Memory Usage Reached Limit (525MB). Starting cleanup...
+2026-09-17 03:55:43,203 [INFO] [System] Memory Cache Flushed. Process Stabilized.
 
 >>> [SYSTEM] MEMORY RECOVERED (Cache Cleared) <<<
 
