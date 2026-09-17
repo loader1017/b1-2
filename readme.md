@@ -7,7 +7,7 @@
   프로세스 실행 후 지속적으로 메모리 사용량이 증가하여, 환경변수에 설정된 `MEMORY_LIMIT`(초기 256MB)을 초과하는 시점에 발생합니다.
 
 ## 2. Evidence & Logs (증거 자료)
-```bash
+```
 2026-09-17 03:16:03,405 [INFO] [MemoryWorker] Current Heap: 250MB
 2026-09-17 03:16:06,424 [INFO] [MemoryWorker] Current Heap: 275MB
 2026-09-17 03:16:06,424 [CRITICAL] [MemoryGuard] Memory limit exceeded (275MB >= 256MB) / (Recommend Over 256MB)
@@ -15,7 +15,7 @@
 
 >>> [SYSTEM] SELF-TERMINATED (Memory Limit Exceeded) <<<
 Killed
-
+```
 ## 3. Root Cause Analysis (원인 분석)
 
 * **기술적 원인 분석:** 어플리케이션 로직 내부에서 할당된 메모리를 해제하지 않고 지속적으로 쌓아두는 메모리 누수(Memory Leak) 결함이 존재합니다.
