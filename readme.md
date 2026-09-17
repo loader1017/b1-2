@@ -1,5 +1,3 @@
-
-```markdown
 # [Bug] OOM - 메모리 누수로 인한 MemoryGuard 보호 정책 강제 종료
 
 ## 1. Description (현상 설명)
@@ -17,8 +15,6 @@
 
 >>> [SYSTEM] SELF-TERMINATED (Memory Limit Exceeded) <<<
 Killed
-
-```
 
 ## 3. Root Cause Analysis (원인 분석)
 
